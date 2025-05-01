@@ -90,23 +90,27 @@ class SNAKE:
 
 
 class FRUIT:
-    def __init__(self):
-        self.randomize()
+    def __init__(self , snake_body):
+        self.randomize(snake_body)
 
     def draw_fruit(self):
         fruit_rect = pygame.Rect(int(self.pos.x * cell_size),int(self.pos.y * cell_size),cell_size,cell_size)
         screen.blit(apple,fruit_rect)
         #pygame.draw.rect(screen,(255,0,0),fruit_rect)
 
-    def randomize(self):
-        self.x = random.randint(0,cell_number-1)
-        self.y = random.randint(0,cell_number-1)
-        self.pos = Vector2(self.x,self.y)
+    def randomize(self , snake_body):
+        while True:
+            self.x = random.randint(0,cell_number-1)
+            self.y = random.randint(0,cell_number-1)
+            pos = Vector2(self.x,self.y)
+            if pos not in snake_body:
+                self.pos = pos
+                break
 
 class MAIN:
     def __init__(self):
         self.snake = SNAKE()
-        self.fruit = FRUIT()
+        self.fruit = FRUIT(self.snake.body)
 
     def update(self):
         self.snake.move_snake()
@@ -121,7 +125,7 @@ class MAIN:
 
     def check_collision(self):
         if self.fruit.pos == self.snake.body[0]:
-            self.fruit.randomize()
+            self.fruit.randomize(self.snake.body)
             self.snake.add_block()
 
     def check_fail(self):
