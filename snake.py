@@ -87,8 +87,6 @@ class SNAKE:
     
     def add_block(self):
         self.new_block = True
-
-
 class FRUIT:
     def __init__(self , snake_body):
         self.randomize(snake_body)
@@ -106,7 +104,14 @@ class FRUIT:
             if pos not in snake_body:
                 self.pos = pos
                 break
-
+class BLOCK:
+    def __init__(self):
+        pass
+    def draw_block(self):
+        block_rect = pygame.Rect(int(self.pos.x * cell_size),int(self.pos.y * cell_size),cell_size,cell_size)
+        screen.blit()
+    def randomize(self):
+        pass
 class MAIN:
     def __init__(self):
         self.snake = SNAKE()
