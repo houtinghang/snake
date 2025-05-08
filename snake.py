@@ -105,17 +105,29 @@ class FRUIT:
                 self.pos = pos
                 break
 class BLOCK:
-    def __init__(self):
-        pass
+    def __init__(self , snake_body , forbidden_pos_list  = None, exsiting_blocks_list = None):
+        self.randomize(snake_body,forbidden_pos_list or [],exsiting_blocks_list or [])
     def draw_block(self):
         block_rect = pygame.Rect(int(self.pos.x * cell_size),int(self.pos.y * cell_size),cell_size,cell_size)
-        screen.blit()
-    def randomize(self):
-        pass
+        pygame.draw.rect(screen,(100,100,100),block_rect)
+    def randomize(self , snake_body , forbidden_pos , exsiting_blocks):
+        while True:
+            self.x = random.randint(0,cell_number-1)
+            self.y = random.randint(0,cell_number-1)
+            pos = Vector2(self.x,self.y)
+            if(pos not in snake_body and pos not in forbidden_pos and all(pos != b.pos for b in exsiting_blocks)):
+                self.pos = pos
+                break
+
 class MAIN:
     def __init__(self):
         self.snake = SNAKE()
         self.fruit = FRUIT(self.snake.body)
+        self.blocks = []
+        NUM_BLOCKS = 5
+        for _ in range(NUM_BLOCKS):
+            block = BLOCK(self.snake.body, [self.fruit.pos], self.blocks)
+            self.blocks.append(block)
 
     def update(self):
         self.snake.move_snake()
@@ -125,6 +137,8 @@ class MAIN:
     def draw_elements(self):
         self.draw_grass()
         self.fruit.draw_fruit()
+        for block in self.blocks:
+            block.draw_block()
         self.snake.draw_snake()
         self.draw_score()
 
@@ -139,6 +153,9 @@ class MAIN:
         
         for block in self.snake.body[1:]:
             if block == self.snake.body[0]:
+                self.game_over()
+        for block in self.blocks:
+            if self.snake.body[0] == block.pos:
                 self.game_over()
         
     def game_over(self):
@@ -182,6 +199,7 @@ clock = pygame.time.Clock()
 test_surface = pygame.Surface((100,200))
 test_surface.fill((0,0,255))
 apple = pygame.image.load('Graphics/apple.png').convert_alpha()
+#block = pygame.image.load('Graphics/block.png').convert_alpha()
 game_font = pygame.font.Font('Snake/Font/PoetsenOne-Regular.ttf',25)
 
 
