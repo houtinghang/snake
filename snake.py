@@ -25,6 +25,9 @@ class SNAKE:
         self.body_br =  pygame.image.load('Graphics/body_br.png').convert_alpha()
         self.body_bl =  pygame.image.load('Graphics/body_bl.png').convert_alpha()
         
+        self.base_speed = 12
+        self.boost_speed = 36
+        self.boost_end = 0
 
     def draw_snake(self):
         self.update_head_graphics()
@@ -87,6 +90,11 @@ class SNAKE:
     
     def add_block(self):
         self.new_block = True
+
+    def activate_boost(self, duration):
+        self.boost_end = pygame.time.get_ticks() + duration
+    def current_speed(self):
+        return self.boost_speed if pygame.time.get_ticks() < self.boost_end else self.base_speed
 class FRUIT:
     def __init__(self , snake_body):
         self.randomize(snake_body)
@@ -118,14 +126,46 @@ class BLOCK:
             if(pos not in snake_body and pos not in forbidden_pos and all(pos != b.pos for b in exsiting_blocks)):
                 self.pos = pos
                 break
+class SPEEDUP:
+    def __init__(self , snake , cell_size , grid_size , interval = 10000, duration = 5000):
+        self.snake = snake
+        self.cell_size = cell_size
+        self.grid_size = grid_size
+        self.interval = interval
+        self.duration = duration
+        self.next_spawn_time = pygame.time.get_ticks() + self.interval
+        self.pos = None
+    def draw_speedup(self):
+        if self.pos is None:
+            return
+        speedup_rect = pygame.Rect(int(self.pos.x * self.cell_size),int(self.pos.y * self.cell_size),self.cell_size,self.cell_size)
+        pygame.draw.rect(screen,(255,0,0),speedup_rect)
+    def randomize(self):
+        while True:
+            self.x = random.randint(0,self.grid_size-1)
+            self.y = random.randint(0,self.grid_size-1)
+            pos = Vector2(self.x,self.y)
+            if pos not in self.snake.body:
+                self.pos = pos
+                break
+    def update(self):
+        current_time = pygame.time.get_ticks()
+        if self.pos is None and current_time >= self.next_spawn_time:
+            self.randomize()
+        if self.pos and self.snake.body[0] == self.pos:
+            self.snake.activate_boost(self.duration)
+            self.pos = None
+            self.next_spawn_time = current_time + self.interval
 
 class MAIN:
     def __init__(self):
         self.snake = SNAKE()
         self.fruit = FRUIT(self.snake.body)
         self.blocks = []
+        self.speedup = SPEEDUP(self.snake,cell_size,cell_number)
     def update(self):
         self.snake.move_snake()
+        self.speedup.update()
         self.check_collision()
         self.check_fail()
 
@@ -134,6 +174,7 @@ class MAIN:
         self.fruit.draw_fruit()
         for block in self.blocks:
             block.draw_block()
+        self.speedup.draw_speedup()
         self.snake.draw_snake()
         self.draw_score()
 
@@ -142,9 +183,9 @@ class MAIN:
             self.fruit.randomize(self.snake.body)
             self.snake.add_block()
 
-            self.NUM_BLOCKS = random.randint(1,10)      ##這個要模型化
+            NUM_BLOCKS = random.randint(1,10)      ##這個要模型化
             self.blocks.clear()
-            for _ in range(self.NUM_BLOCKS):
+            for _ in range(NUM_BLOCKS):
                 block = BLOCK(self.snake.body, [self.fruit.pos], self.blocks)
                 self.blocks.append(block)
 
@@ -234,5 +275,5 @@ while True:
     screen.fill((175,215,70))
     main_game.draw_elements()
     pygame.display.update()
-    clock.tick(60) 
+    clock.tick(main_game.snake.current_speed())
 
