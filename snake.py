@@ -124,11 +124,6 @@ class MAIN:
         self.snake = SNAKE()
         self.fruit = FRUIT(self.snake.body)
         self.blocks = []
-        NUM_BLOCKS = 5
-        for _ in range(NUM_BLOCKS):
-            block = BLOCK(self.snake.body, [self.fruit.pos], self.blocks)
-            self.blocks.append(block)
-
     def update(self):
         self.snake.move_snake()
         self.check_collision()
@@ -146,6 +141,13 @@ class MAIN:
         if self.fruit.pos == self.snake.body[0]:
             self.fruit.randomize(self.snake.body)
             self.snake.add_block()
+
+            self.NUM_BLOCKS = random.randint(1,10)      ##這個要模型化
+            self.blocks.clear()
+            for _ in range(self.NUM_BLOCKS):
+                block = BLOCK(self.snake.body, [self.fruit.pos], self.blocks)
+                self.blocks.append(block)
+
 
     def check_fail(self):
         if not (0 <= self.snake.body[0].x < cell_number and 0 <= self.snake.body[0].y < cell_number):
